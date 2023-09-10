@@ -1,7 +1,8 @@
 -- CreateTable
-CREATE TABLE "user" (
+CREATE TABLE "user"
+(
     "id" TEXT NOT NULL,
-    "firstNAme" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
     "lastName" TEXT,
     "email" TEXT NOT NULL,
     "profileImageURL" TEXT,
