@@ -8,6 +8,7 @@ import { User } from "./user";
 export async function initServer() {
     const app = express();
     app.use(express.json());
+    app.use(cors());
 
     // prismaClient.user.create({
     //     data: {},
