@@ -51,5 +51,19 @@ const queries = {
             console.log("Error >>> ", error);
         }
     }),
+    getCurrentUser: (parent, args, ctx) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
+        try {
+            const id = (_a = ctx.user) === null || _a === void 0 ? void 0 : _a.id;
+            if (!id)
+                return null;
+            const user = yield db_1.prismaClient.user.findUnique({ where: { id } });
+            return user;
+        }
+        catch (error) {
+            console.log(error, "Error");
+            return null;
+        }
+    }),
 };
 exports.resolvers = { queries };

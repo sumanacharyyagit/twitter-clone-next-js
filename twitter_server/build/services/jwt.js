@@ -17,13 +17,30 @@ const JWT_SECRET_KEY = "jwt_secret_key_PASS@123";
 class JWTService {
     static generateTokenForUser(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const payload = {
-                id: user === null || user === void 0 ? void 0 : user.id,
-                email: user === null || user === void 0 ? void 0 : user.email,
-            };
-            const token = jsonwebtoken_1.default.sign(payload, JWT_SECRET_KEY);
-            return token;
+            try {
+                const payload = {
+                    id: user === null || user === void 0 ? void 0 : user.id,
+                    email: user === null || user === void 0 ? void 0 : user.email,
+                };
+                const token = jsonwebtoken_1.default.sign(payload, JWT_SECRET_KEY);
+                return token;
+            }
+            catch (error) {
+                console.log(error, "Error");
+                return null;
+            }
         });
+    }
+    static decodeToken(token) {
+        try {
+            if (token.startsWith("Bearer "))
+                token = token.substring(7, token.length);
+            return jsonwebtoken_1.default.verify(token, JWT_SECRET_KEY);
+        }
+        catch (error) {
+            console.log(error, "Error");
+            return null;
+        }
     }
 }
 exports.default = JWTService;
