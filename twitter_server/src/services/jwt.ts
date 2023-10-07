@@ -1,11 +1,11 @@
 import JWT from "jsonwebtoken";
-import { user } from "@prisma/client";
+import { User } from "@prisma/client";
 import { JWTUser } from "../interfaces";
 
 const JWT_SECRET_KEY = "jwt_secret_key_PASS@123";
 
 class JWTService {
-    public static async generateTokenForUser(user: user) {
+    public static async generateTokenForUser(user: User) {
         try {
             const payload: JWTUser = {
                 id: user?.id,

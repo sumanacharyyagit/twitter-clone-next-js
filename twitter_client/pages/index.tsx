@@ -1,7 +1,7 @@
 import React, { use, useCallback } from "react";
 import Image from "next/image";
 import { BsTwitter, BsBell, BsBookmark, BsEnvelope } from "react-icons/bs";
-import { BiHomeAlt, BiHash, BiUser, BiMoney } from "react-icons/bi";
+import { BiHomeAlt, BiHash, BiUser, BiMoney, BiImages } from "react-icons/bi";
 import { HiOutlineDotsCircleHorizontal } from "react-icons/hi";
 import FeedCard from "@/components/FeedCard";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
@@ -85,6 +85,13 @@ export default function Home() {
         [queryClient]
     );
 
+    const handleSelectImage = useCallback(() => {
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.setAttribute("accept", "image/*");
+        input.click();
+    }, []);
+
     return (
         <div>
             <div className="grid grid-cols-12 h-screen w-screen px-56 gap-3">
@@ -138,6 +145,39 @@ export default function Home() {
                     )}
                 </div>
                 <div className="col-span-5 border-r-[0.2px] border-l-[0.2px] h-screen overflow-scroll border-gray-600">
+                    <div>
+                        <div className="border border-r-0 border-l-0 border-b-0 border-gray-500 p-4 hover:bg-slate-800 transition-all cursor-pointer">
+                            <div className="grid grid-cols-12">
+                                <div className="col-span-1">
+                                    {user?.profileImageURL && (
+                                        <Image
+                                            src={user?.profileImageURL}
+                                            alt=""
+                                            height={50}
+                                            width={50}
+                                            className="rounded-full"
+                                        />
+                                    )}
+                                </div>
+                                <div className="col-span-11">
+                                    <textarea
+                                        className="w-full bg-transparent text-xl px-3 border-b border-slate-700"
+                                        rows={3}
+                                        placeholder="What's happning?"
+                                    ></textarea>
+                                    <div className="mt-2 flex justify-between items-center">
+                                        <BiImages
+                                            onClick={() => handleSelectImage()}
+                                            className="text-xl"
+                                        />
+                                        <button className="bg-[#1d9bf0] py-2 px-4 rounded-full">
+                                            Tweet
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <FeedCard />
                     <FeedCard />
                     <FeedCard />

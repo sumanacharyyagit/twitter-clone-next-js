@@ -13,12 +13,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initServer = void 0;
-const express_1 = __importDefault(require("express"));
 const server_1 = require("@apollo/server");
 const express4_1 = require("@apollo/server/express4");
 const cors_1 = __importDefault(require("cors"));
-const user_1 = require("./user");
+const express_1 = __importDefault(require("express"));
 const jwt_1 = __importDefault(require("../services/jwt"));
+const tweet_1 = require("./tweet");
+const user_1 = require("./user");
 function initServer() {
     return __awaiter(this, void 0, void 0, function* () {
         const app = (0, express_1.default)();
@@ -30,13 +31,18 @@ function initServer() {
         const graphQlServer = new server_1.ApolloServer({
             typeDefs: `
             ${user_1.User.types}
+            ${tweet_1.Tweet.types}  
             type Query {
                 ${user_1.User.queries}
+                ${tweet_1.Tweet.queries}
             }
+
+            type Mutation {
+                ${tweet_1.Tweet.mutations}
+            }
+
         `,
-            resolvers: {
-                Query: Object.assign({}, user_1.User.resolvers.queries),
-            },
+            resolvers: Object.assign(Object.assign({ Query: Object.assign(Object.assign({}, user_1.User.resolvers.queries), tweet_1.Tweet.resolvers.queries), Mutation: Object.assign({}, tweet_1.Tweet.resolvers.mutations) }, user_1.User.resolvers.extraResolvers), tweet_1.Tweet.resolvers.extraResolvers),
         });
         yield graphQlServer.start();
         app.use("/api/graphql", (0, express4_1.expressMiddleware)(graphQlServer, {
