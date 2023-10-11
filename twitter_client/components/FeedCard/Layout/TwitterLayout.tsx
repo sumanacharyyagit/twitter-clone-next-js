@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 import { graphQlClient } from "@/clients/api";
 import { verifyGoogleTokenQuery } from "@/graphql/query/user";
@@ -11,46 +11,13 @@ import { toast } from "react-hot-toast";
 import { BiHash, BiHomeAlt, BiMoney, BiUser } from "react-icons/bi";
 import { BsBell, BsBookmark, BsEnvelope, BsTwitter } from "react-icons/bs";
 import { HiOutlineDotsCircleHorizontal } from "react-icons/hi";
+import Link from "next/link";
 
 interface ITwitterSidebarButton {
     title: string;
     icon: React.ReactNode;
+    link: string;
 }
-
-const sidebarMenuItems: ITwitterSidebarButton[] = [
-    {
-        title: "Home",
-        icon: <BiHomeAlt />,
-    },
-    {
-        title: "Explore",
-        icon: <BiHash />,
-    },
-    {
-        title: "Notifications",
-        icon: <BsBell />,
-    },
-    {
-        title: "Messages",
-        icon: <BsEnvelope />,
-    },
-    {
-        title: "Bookmarks",
-        icon: <BsBookmark />,
-    },
-    {
-        title: "Twitter Blue",
-        icon: <BiMoney />,
-    },
-    {
-        title: "Profile",
-        icon: <BiUser />,
-    },
-    {
-        title: "More",
-        icon: <HiOutlineDotsCircleHorizontal />,
-    },
-];
 
 interface TwitterLayoutProps {
     children: React.ReactNode;
@@ -65,6 +32,53 @@ const TwitterLayout: React.FC<TwitterLayoutProps> = ({ children }) => {
     const { tweets = [] } = useGetAllTweets();
 
     const { mutate } = useCreateTweet();
+
+    const sidebarMenuItems: ITwitterSidebarButton[] = useMemo(
+        () => [
+            {
+                title: "Home",
+                icon: <BiHomeAlt />,
+                link: "/",
+            },
+            {
+                title: "Explore",
+                icon: <BiHash />,
+                link: "/",
+            },
+            {
+                title: "Notifications",
+                icon: <BsBell />,
+                link: "/",
+                link: "/",
+            },
+            {
+                title: "Messages",
+                icon: <BsEnvelope />,
+                link: "/",
+            },
+            {
+                title: "Bookmarks",
+                icon: <BsBookmark />,
+                link: "/",
+            },
+            {
+                title: "Twitter Blue",
+                icon: <BiMoney />,
+                link: "/",
+            },
+            {
+                title: "Profile",
+                icon: <BiUser />,
+                link: `/${user?.id}`,
+            },
+            {
+                title: "More",
+                icon: <HiOutlineDotsCircleHorizontal />,
+                link: "/",
+            },
+        ],
+        [user?.id]
+    );
 
     const handleGoogleOAuth = useCallback(
         async (cred: CredentialResponse) => {
@@ -122,16 +136,18 @@ const TwitterLayout: React.FC<TwitterLayoutProps> = ({ children }) => {
                             <ul>
                                 {sidebarMenuItems.length &&
                                     sidebarMenuItems.map((item) => (
-                                        <li
-                                            className="flex justify-start items-center gap-4 hover:bg-slate-600 rounded-full px-5 py-3 w-fit cursor-pointer mt-4"
-                                            key={item.title}
-                                        >
-                                            <span className="text-3xl">
-                                                {item.icon}
-                                            </span>
-                                            <span className="hidden sm:inline">
-                                                {item.title}
-                                            </span>
+                                        <li key={item.title}>
+                                            <Link
+                                                href={item?.link}
+                                                className="flex justify-start items-center gap-4 hover:bg-slate-600 rounded-full px-5 py-3 w-fit cursor-pointer mt-4"
+                                            >
+                                                <span className="text-3xl">
+                                                    {item.icon}
+                                                </span>
+                                                <span className="hidden sm:inline">
+                                                    {item.title}
+                                                </span>
+                                            </Link>
                                         </li>
                                     ))}
                             </ul>
