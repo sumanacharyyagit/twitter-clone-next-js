@@ -12,14 +12,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
 import { BiImages } from "react-icons/bi";
+import { GetServerSideProps } from "next";
+import { getAllTweetsQuery } from "@/graphql/query/tweet";
 
-export default function Home() {
+interface HomeProps {
+    tweets?: Tweet[];
+}
+export default function Home({ tweets = [] }: HomeProps) {
     const [content, setContent] = useState("");
 
     const queryClient = useQueryClient();
 
     const { user } = useCurrentUser();
-    const { tweets = [] } = useGetAllTweets();
+    // const { tweets = [] } = useGetAllTweets();
 
     const { mutate } = useCreateTweet();
 
@@ -125,3 +130,10 @@ export default function Home() {
         </div>
     );
 }
+
+export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
+    const tweets = await graphQlClient.request(getAllTweetsQuery);
+    return {
+        props: { tweets: tweets?.getAllTweets as Tweet[] },
+    };
+};

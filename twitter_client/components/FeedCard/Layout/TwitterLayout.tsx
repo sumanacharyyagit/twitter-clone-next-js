@@ -173,16 +173,21 @@ const TwitterLayout: React.FC<TwitterLayoutProps> = ({ children }) => {
                                 />
                             )}
                             <div className="hidden sm:flex flex-col overflow-hidden">
-                                <div>
-                                    <h3 className="text-l md:text-xl">
-                                        {user?.firstName} {user?.lastName}
-                                    </h3>
-                                </div>
-                                <div>
-                                    <h3 className="text-l md:text-xl">
-                                        {user?.email}
-                                    </h3>
-                                </div>
+                                <Link
+                                    href={`/${user.id}`}
+                                    className="cursor-pointer"
+                                >
+                                    <div>
+                                        <h3 className="text-l md:text-xl">
+                                            {user?.firstName} {user?.lastName}
+                                        </h3>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-l md:text-xl">
+                                            {user?.email}
+                                        </h3>
+                                    </div>
+                                </Link>
                             </div>
                         </div>
                     )}

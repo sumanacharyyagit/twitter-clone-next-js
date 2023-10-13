@@ -5,6 +5,7 @@ import image from "../../assets/male-user-avatar-icon.png";
 import { BiMessageRounded, BiUpload } from "react-icons/bi";
 import { AiOutlineRetweet, AiOutlineHeart } from "react-icons/ai";
 import { Tweet } from "@/gql/graphql";
+import Link from "next/link";
 
 interface FeedcardProps {
     data: Tweet;
@@ -27,7 +28,12 @@ const FeedCard: React.FC<FeedcardProps> = ({ data }) => {
                 </div>
                 <div className="col-span-11 px-2">
                     <h5>
-                        {data?.author?.firstName} {data?.author?.lastName}
+                        <Link
+                            href={`/${data?.author?.id}`}
+                            className="cursor-pointer"
+                        >
+                            {data?.author?.firstName} {data?.author?.lastName}
+                        </Link>
                     </h5>
                     <p>{data?.content}</p>
                     <div className="flex justify-between mt-5 text-xl items-center p-2 w-[90%]">

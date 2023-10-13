@@ -1,18 +1,17 @@
+import { graphQlClient } from "@/clients/api";
 import FeedCard from "@/components/FeedCard";
 import TwitterLayout from "@/components/FeedCard/Layout/TwitterLayout";
-import { Tweet } from "@/gql/graphql";
-import { useCurrentUser } from "@/hooks/user";
-import type { NextPage } from "next";
+import { Tweet, User } from "@/gql/graphql";
+import { getUserByIdQuery } from "@/graphql/query/user";
+import type { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
-import { useRouter } from "next/router";
 import { BsArrowLeft } from "react-icons/bs";
 
-const UserProfilePage: NextPage = () => {
-    const { user } = useCurrentUser();
-    const router = useRouter();
+interface ServerProps {
+    user?: User;
+}
 
-    console.log(router.query?.id, "router.query"); // TODO: Fetch the user by ID
-
+const UserProfilePage: NextPage<ServerProps> = ({ user }) => {
     return (
         <div>
             <TwitterLayout>
@@ -24,7 +23,7 @@ const UserProfilePage: NextPage = () => {
                                 Suman Acharyya
                             </h1>
                             <h1 className="text-md font-bold text-slate-500">
-                                100 tweets
+                                {user?.tweets?.length} tweets
                             </h1>
                         </div>
                     </nav>
@@ -55,6 +54,33 @@ const UserProfilePage: NextPage = () => {
             </TwitterLayout>
         </div>
     );
+};
+
+export const getServerSideProps: GetServerSideProps<ServerProps> = async (
+    context
+) => {
+    const id = context.query.id as string | undefined;
+    if (!id)
+        return {
+            notFound: true,
+            props: {
+                user: undefined,
+            },
+        };
+    const userInfo = await graphQlClient.request(getUserByIdQuery, { id });
+    if (!userInfo)
+        return {
+            notFound: true,
+            props: {
+                user: undefined,
+            },
+        };
+
+    return {
+        props: {
+            user: userInfo?.getUserById as User,
+        },
+    };
 };
 
 export default UserProfilePage;
