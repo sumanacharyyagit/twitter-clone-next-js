@@ -8,12 +8,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv_1 = __importDefault(require("dotenv"));
 const app_1 = require("./app");
+dotenv_1.default.config();
 function init() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const app = yield (0, app_1.initServer)();
-        const PORT = 8080;
+        const PORT = (_a = process.env.PORT) !== null && _a !== void 0 ? _a : "8080";
         app.listen(PORT, () => {
             console.log(`Server listening on http://localhost:${PORT}`);
         });
