@@ -1,5 +1,5 @@
 import TwitterLayout from "@/components/FeedCard/Layout/TwitterLayout";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { graphQlClient } from "@/clients/api";
 import FeedCard from "@/components/FeedCard";
@@ -21,16 +21,16 @@ import {
 interface HomeProps {
     tweets?: Tweet[];
 }
-export default function Home({ tweets = [] }: HomeProps) {
+export default function Home(props: HomeProps) {
     const [content, setContent] = useState("");
     const [imageURL, setImageURL] = useState("");
 
     const queryClient = useQueryClient();
 
     const { user } = useCurrentUser();
-    // const { tweets = [] } = useGetAllTweets();
+    const { tweets = props.tweets as Tweet[] } = useGetAllTweets();
 
-    const { mutate } = useCreateTweet();
+    const { mutateAsync } = useCreateTweet();
 
     const handleGoogleOAuth = useCallback(
         async (cred: CredentialResponse) => {
@@ -103,12 +103,14 @@ export default function Home({ tweets = [] }: HomeProps) {
         input.click();
     }, [handleInputChangeFile]);
 
-    const handleCreateTweet = useCallback(() => {
-        mutate({
+    const handleCreateTweet = useCallback(async () => {
+        await mutateAsync({
             content,
             imageURL,
         });
-    }, [content, imageURL, mutate]);
+        setContent("");
+        setImageURL("");
+    }, [content, imageURL, mutateAsync]);
 
     return (
         <div>
@@ -178,8 +180,8 @@ export default function Home({ tweets = [] }: HomeProps) {
 }
 
 export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
-    const tweets = await graphQlClient.request(getAllTweetsQuery);
+    const allTweets = await graphQlClient.request(getAllTweetsQuery);
     return {
-        props: { tweets: tweets?.getAllTweets as Tweet[] },
+        props: { tweets: allTweets?.getAllTweets as Tweet[] },
     };
 };

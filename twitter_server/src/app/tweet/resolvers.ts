@@ -3,23 +3,16 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { prismaClient } from "../../clients/db";
 import { GraphqlContext } from "../../interfaces";
-
-interface CreateTweetPayload {
-    content: string;
-    imageURL?: string;
-}
+import UserService from "../../services/user";
+import TweetService, { ICreateTweetPayload } from "../../services/twitter";
 
 const s3Client = new S3Client({
-    credentials: {
-        accessKeyId: process.env.AWS_S3_KEY ?? "",
-        secretAccessKey: process.env.AWS_S3_SECRET ?? "",
-    },
-    region: "ap-south-1",
+    //? Autometically fetches the KEY and SECRET from .env
+    region: process.env.AWS_DEFAULT_REGION,
 });
 
 const queries = {
-    getAllTweets: async () =>
-        await prismaClient.tweet.findMany({ orderBy: { createdAt: "desc" } }),
+    getAllTweets: async () => await TweetService.getAllTweetList(),
     getSignedURLForTweet: async (
         parent: any,
         { imageName, imageType }: { imageName: string; imageType: string },
@@ -32,7 +25,7 @@ const queries = {
                 throw new Error("Unsupported image type!");
 
             const pcreatePUTObjectCommand = new PutObjectCommand({
-                Bucket: "twitter-dev-bucket",
+                Bucket: process.env.AWS_S3_BUCKET,
                 Key: `/uploads/${
                     ctx.user.id
                 }/tweets/${imageName}-${Date.now().toString()}.${imageType}`,
@@ -55,29 +48,25 @@ const queries = {
 const mutations = {
     createTweet: async (
         parent: any,
-        { payload }: { payload: CreateTweetPayload },
+        { payload }: { payload: ICreateTweetPayload },
         ctx: GraphqlContext
     ) => {
         if (!ctx.user) {
             throw new Error("You are not authenticated");
         }
-        const tweet = await prismaClient.tweet.create({
-            data: {
-                content: payload.content,
-                imageURL: payload.imageURL,
-                author: {
-                    connect: { id: ctx.user.id },
-                },
-            },
+        const tweet = await TweetService.createTweetData({
+            ...payload,
+            userId: ctx.user.id,
         });
+
         return tweet;
     },
 };
 
 const extraResolvers = {
     Tweet: {
-        author: (parent: Tweet) =>
-            prismaClient.user.findUnique({ where: { id: parent.authorId } }),
+        author: async (parent: Tweet) =>
+            await UserService.getCurrentUserById(parent.authorId),
     },
 };
 
