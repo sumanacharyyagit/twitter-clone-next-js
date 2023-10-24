@@ -75,6 +75,37 @@ const extraResolvers = {
             });
             return res.map((el) => el.following);
         }),
+        recommendedUsers: (parent, _, ctx) => __awaiter(void 0, void 0, void 0, function* () {
+            var _b;
+            if (!ctx.user)
+                return [];
+            const myFollowings = yield db_1.prismaClient.follows.findMany({
+                where: { follower: { id: (_b = ctx === null || ctx === void 0 ? void 0 : ctx.user) === null || _b === void 0 ? void 0 : _b.id } },
+                include: {
+                    following: {
+                        include: {
+                            followers: {
+                                include: {
+                                    following: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+            const toRecommendUsers = [];
+            for (const followers of myFollowings) {
+                for (const followingOfFollowedUser of followers.following
+                    .followers) {
+                    if (followingOfFollowedUser.following.id !== ctx.user.id &&
+                        myFollowings.findIndex((el) => (el === null || el === void 0 ? void 0 : el.followerId) ===
+                            followingOfFollowedUser.following.id) < 0) {
+                        toRecommendUsers.push(followingOfFollowedUser.following);
+                    }
+                }
+            }
+            return toRecommendUsers;
+        }),
     },
 };
 exports.resolvers = { queries, extraResolvers, mutations };
