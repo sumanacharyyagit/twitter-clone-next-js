@@ -192,7 +192,7 @@ const TwitterLayout: React.FC<TwitterLayoutProps> = ({ children }) => {
                         </div>
                     )}
                 </div>
-                <div className="col-span-10 md:col-span-5 sm:col-span-9 border-r-[0.2px] border-l-[0.2px] h-screen overflow-scroll border-gray-600">
+                <div className="col-span-10 md:col-span-5 sm:col-span-9 border-r-[0.2px] border-l-[0.2px] h-screen overflow-scroll border-gray-600 scrollbar-hide ">
                     {children}
                 </div>
                 <div className="hidden md:block col-span-3 p-5">

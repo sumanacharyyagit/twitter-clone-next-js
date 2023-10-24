@@ -36,6 +36,20 @@ const queries = {
     }),
     getUserById: (parent, { id }, ctx) => __awaiter(void 0, void 0, void 0, function* () { return yield user_1.default.getCurrentUserById(id); }),
 };
+const mutations = {
+    followUser: (parent, { to }, ctx) => __awaiter(void 0, void 0, void 0, function* () {
+        if (!ctx.user || !ctx.user.id)
+            throw new Error("Unauthenticated!");
+        yield user_1.default.followUser(ctx.user.id, to);
+        return true;
+    }),
+    unfollowUser: (parent, { to }, ctx) => __awaiter(void 0, void 0, void 0, function* () {
+        if (!ctx.user || !ctx.user.id)
+            throw new Error("Unauthenticated!");
+        yield user_1.default.unfollowUser(ctx.user.id, to);
+        return true;
+    }),
+};
 const extraResolvers = {
     User: {
         tweets: (parent) => __awaiter(void 0, void 0, void 0, function* () {
@@ -43,6 +57,24 @@ const extraResolvers = {
                 where: { author: { id: parent.id } },
             });
         }),
+        followers: (parent) => __awaiter(void 0, void 0, void 0, function* () {
+            const res = yield db_1.prismaClient.follows.findMany({
+                where: { following: { id: parent.id } },
+                include: {
+                    follower: true,
+                },
+            });
+            return res.map((el) => el.follower);
+        }),
+        following: (parent) => __awaiter(void 0, void 0, void 0, function* () {
+            const res = yield db_1.prismaClient.follows.findMany({
+                where: { follower: { id: parent.id } },
+                include: {
+                    following: true,
+                },
+            });
+            return res.map((el) => el.following);
+        }),
     },
 };
-exports.resolvers = { queries, extraResolvers };
+exports.resolvers = { queries, extraResolvers, mutations };

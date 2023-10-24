@@ -71,6 +71,34 @@ class UserService {
     public static async getCurrentUserById(id: string) {
         return prismaClient.user.findUnique({ where: { id } });
     }
+    public static followUser(from: string, to: string) {
+        try {
+            return prismaClient.follows.create({
+                data: {
+                    follower: { connect: { id: from } },
+                    following: { connect: { id: to } },
+                },
+            });
+        } catch (error) {
+            // console.log(error, "ERROR");
+            throw error;
+        }
+    }
+    public static unfollowUser(from: string, to: string) {
+        try {
+            return prismaClient.follows.delete({
+                where: {
+                    followerId_followingId: {
+                        followerId: from,
+                        followingId: to,
+                    },
+                },
+            });
+        } catch (error) {
+            // console.log(error, "ERROR");
+            throw error;
+        }
+    }
 }
 
 export default UserService;

@@ -2,9 +2,17 @@ import { graphQlClient } from "@/clients/api";
 import FeedCard from "@/components/FeedCard";
 import TwitterLayout from "@/components/FeedCard/Layout/TwitterLayout";
 import { Tweet, User } from "@/gql/graphql";
+import {
+    followUserMutation,
+    unfollowUserMutation,
+} from "@/graphql/mutation/user";
 import { getUserByIdQuery } from "@/graphql/query/user";
+import { useCurrentUser } from "@/hooks/user";
+import { useQueryClient } from "@tanstack/react-query";
 import type { GetServerSideProps, NextPage } from "next";
 import Image from "next/image";
+import { useRouter } from "next/router";
+import { useCallback } from "react";
 import { BsArrowLeft } from "react-icons/bs";
 
 interface ServerProps {
@@ -12,6 +20,23 @@ interface ServerProps {
 }
 
 const UserProfilePage: NextPage<ServerProps> = ({ user }) => {
+    const router = useRouter();
+    const { user: currentUser } = useCurrentUser();
+
+    const queryClient = useQueryClient();
+
+    const handleFollowUser = useCallback(async () => {
+        if (!user?.id) return;
+        await graphQlClient.request(followUserMutation, { to: user?.id });
+        await queryClient.invalidateQueries(["current-user"]);
+    }, [user?.id, queryClient]);
+
+    const handleUnfollowUser = useCallback(async () => {
+        if (!user?.id) return;
+        await graphQlClient.request(unfollowUserMutation, { to: user?.id });
+        await queryClient.invalidateQueries(["current-user"]);
+    }, [user?.id, queryClient]);
+
     return (
         <div>
             <TwitterLayout>
@@ -20,7 +45,7 @@ const UserProfilePage: NextPage<ServerProps> = ({ user }) => {
                         <BsArrowLeft className="text-4xl" />
                         <div>
                             <h1 className="text-2xl font-bold">
-                                Suman Acharyya
+                                {`${user?.firstName} ${user?.lastName}`}
                             </h1>
                             <h1 className="text-md font-bold text-slate-500">
                                 {user?.tweets?.length} tweets
@@ -38,8 +63,38 @@ const UserProfilePage: NextPage<ServerProps> = ({ user }) => {
                             />
                         )}
                         <h1 className="text-2xl font-bold mt-5">
-                            Suman Acharyya
+                            {`${user?.firstName} ${user?.lastName}`}
                         </h1>
+                        <div className="flex justify-between items-center">
+                            <div className="flex gap-4 mt-2 text-sm text-gray-300">
+                                <span>{user?.followers?.length} Followers</span>
+                                <span>{user?.following?.length} Following</span>
+                            </div>
+                            {currentUser?.id != user?.id && (
+                                <>
+                                    {(currentUser?.following &&
+                                        currentUser?.following?.findIndex(
+                                            (el: { id: string }) =>
+                                                el?.id === user?.id
+                                        )) ??
+                                    -1 < 0 ? (
+                                        <button
+                                            onClick={handleFollowUser}
+                                            className="bg-white text-black px-3 py-1 rounded-full text-sm"
+                                        >
+                                            Follow
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={handleUnfollowUser}
+                                            className="bg-white text-black px-3 py-1 rounded-full text-sm"
+                                        >
+                                            unfollow
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                        </div>
                     </div>
                     <div>
                         {user &&
