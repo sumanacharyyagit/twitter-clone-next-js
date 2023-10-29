@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolvers = void 0;
 const db_1 = require("../../clients/db");
 const user_1 = __importDefault(require("../../services/user"));
+const redis_1 = require("../../clients/redis");
 const queries = {
     verifyGoogleToken: (parent, { token }) => __awaiter(void 0, void 0, void 0, function* () {
         const tokenValue = yield user_1.default.verifyGoogleAuthToken(token);
@@ -38,16 +39,28 @@ const queries = {
 };
 const mutations = {
     followUser: (parent, { to }, ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        if (!ctx.user || !ctx.user.id)
-            throw new Error("Unauthenticated!");
-        yield user_1.default.followUser(ctx.user.id, to);
-        return true;
+        try {
+            if (!ctx.user || !ctx.user.id)
+                throw new Error("Unauthenticated!");
+            yield user_1.default.followUser(ctx.user.id, to);
+            yield redis_1.redisClient.del(`RECOMMENDED_USERS:${ctx.user.id}`);
+            return true;
+        }
+        catch (error) {
+            return false;
+        }
     }),
     unfollowUser: (parent, { to }, ctx) => __awaiter(void 0, void 0, void 0, function* () {
-        if (!ctx.user || !ctx.user.id)
-            throw new Error("Unauthenticated!");
-        yield user_1.default.unfollowUser(ctx.user.id, to);
-        return true;
+        try {
+            if (!ctx.user || !ctx.user.id)
+                throw new Error("Unauthenticated!");
+            yield user_1.default.unfollowUser(ctx.user.id, to);
+            yield redis_1.redisClient.del(`RECOMMENDED_USERS:${ctx.user.id}`);
+            return true;
+        }
+        catch (error) {
+            return false;
+        }
     }),
 };
 const extraResolvers = {
@@ -79,6 +92,10 @@ const extraResolvers = {
             var _b;
             if (!ctx.user)
                 return [];
+            const cachedValue = yield redis_1.redisClient.get(`RECOMMENDED_USERS:${ctx.user.id}`);
+            if (cachedValue) {
+                return JSON.parse(cachedValue);
+            }
             const myFollowings = yield db_1.prismaClient.follows.findMany({
                 where: { follower: { id: (_b = ctx === null || ctx === void 0 ? void 0 : ctx.user) === null || _b === void 0 ? void 0 : _b.id } },
                 include: {
@@ -104,6 +121,7 @@ const extraResolvers = {
                     }
                 }
             }
+            yield redis_1.redisClient.set(`RECOMMENDED_USERS:${ctx.user.id}`, JSON.stringify(toRecommendUsers));
             return toRecommendUsers;
         }),
     },

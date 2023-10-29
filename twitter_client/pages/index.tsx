@@ -165,7 +165,8 @@ export default function Home(props: HomeProps) {
                         </div>
                     </div>
 
-                    {tweets.length > 0 &&
+                    {tweets &&
+                        tweets?.length > 0 &&
                         tweets.map((tweet: Tweet) =>
                             tweet ? (
                                 <FeedCard key={tweet.id} data={tweet} />
